@@ -11,14 +11,37 @@ Please note that due to the limited amount of resources available to process suc
 
 ## Litterature Review
 
-Although a Litterature Review may not be appropriated in a ReadMe, this short section helps to better understand the choices taken for the experiments.
+*Although a Litterature Review may not be appropriated in a ReadMe, this short section helps to better understand the choices taken for the experiments.*
 
 Before the era of deep learning, steganalysis methods involved extracting characteristic features from an image to feed them to a classifier. Hyun et al., use histograms of wavelet subbands extracted from images as an input of an MLP binary classifier [1]. In Pevny et al., the stego noise is exposed with high pass filters and a Markov chain is trained to learn the transition probabilities between adjacent pixel values. Subsets of these transitions probabilities are used as features for a SVM classifier [2]. 
 
-Since stego noise is a high frequency (rapidly changing) noise, using high pass filters increases the SNR, by removing low frequency components, as seen in [2]. The Spatial Rich Model (SRM) is a set of 30 high pass filters of the 1st, 2nd and 3rd order [3]. In many recent papers using CNNs for Steganalysis (which as one could expect, proved to work better than other methods), the first layers are initialized with the values of the SRM filters [4,5,6]. Furthermore, using a trunctation layer for the activation of the SRM filters allows to filter out large elements in the image, which contain no information about the stego noise, leading to a faster training and a higher accuraccy [7].
+Since stego noise is a high frequency (rapidly changing) noise, using high pass filters increases the SNR, by removing low frequency components, as seen in [2]. The Spatial Rich Model (SRM) is a set of 30 high pass filters of the 1st, 2nd and 3rd order [3]. In many recent papers using CNNs for Steganalysis (which as one could expect, proved to work better than other methods), the first layers are initialized with the values of the SRM filters [4,5,6]. Furthermore, using a trunctation layer for the activation of the SRM filters allows to filter out large elements in the image, which contain no information about the stego noise, leading to a faster training and a higher accuraccy [7]. The most commonly used is the Linear Truncation Unit (TLU) which is defined as follows [6]:
+
+<img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/TLU.png" width="200" height="70">
+
+Wu et al. propose an alternative to the TLU in [6], the Single-Valued Truncation (STL) leading to better results:
+
+<img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/STL.png" width="200" height="50">
+
+The idea behind the STL is that since the truncated values provide useless information, setting them to the same value allows to reduce the total variance. 
 
 ## First experiment: Denoising Autoencoder (unsucessful: very early convergence)
-The first idea was to use a denoising autoencoder, since the orignal image was provided for all altered images (
+
+Since for all altered images, the original image was provided, the first idea was to use a denoising autoencoder (DAE) to remove the stego noise. The DAE was taking as input an orginal or an altered image, and the output was compared to the original image for the computation of the loss function. Hence, one could expect the DAE to consistentely output an image without stego noise, and therefore, comparing the input with the output would allow to tell whether the input contained stego noise. Then, two different approaches were experimented.
+
+
+noise much bigger than stego (10 times larger)
+more complex problem
+
+code in unused
+
+Several variants:
+-
+-
+-
+
+
+Talk about lms
 
 ## References
 [1] Hyun, S. H., Park, T. H., Jeong, B. G., Kim, Y. S., & Eom, I. K. (2010). Feature Extraction for Steganalysis using Histogram Change of Wavelet Subbands. In Proceeding of The 25th International Technical Conference on Circuits/Systems, Computers and Communications (ITC-CSCC 2010), Pattaya, Thailand, JULY (pp. 4-7).
