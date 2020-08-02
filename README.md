@@ -5,7 +5,7 @@ Pytorch implementation of a steganalysis network as part of the Alaska2 Kaggle c
 ## Introduction
 Steganography is the science of hidding messages into images by changing its encoding coefficients in the DCT domain. Such changes slightly alter the pixel values in the spatial domain but are not noticeable by the human eye. Steganalysis is the study of detecting wether an image has been altered through steganography, i.e wheter it contains "stego noise".
 
-The [Alaska2 competiton][alaska] consists in classifying images within two classes: original or altered with steganography. A labelled dataset of 75k series of images is provided. Each serie of images contains an orignal image and three alterations of the original image through three different steganographic methods: UERD, JUNIWARD and JMiPOD. Hence, the dataset contains a total of 75 * 4 = 300k images.
+The [Alaska2 competiton][alaska] consists in classifying images within two classes: original or altered with steganography. A labelled dataset of 75k series of images is provided. Each serie of images contains an orignal image and three alterations of the original image through three different steganographic methods: UERD, JUNIWARD and JMiPOD. Hence, the dataset contains a total of 75 * 4 = 300k images. The Testset is composed of 10k images.
 
 Please note that due to the limited amount of resources available to process such a large dataset, the amount of experiments/runs were very limited.
 
@@ -26,14 +26,20 @@ Wu et al. propose an alternative to the TLU in [6], the Single-Valued Truncation
 The idea behind the STL is that since the truncated values provide useless information, setting them to the same value allows to reduce the total variance. 
 
 
-## Model and Training Specs
+## Model
 
-The model is composed of the 30 SRM filters, followed by a truncation layer and a pretrained EfficientNet-B2. The choice of the truncation layer is detailled in the next section. Using a binary classification led to bad accuraccies, so 4 classes were outputted instead (orignal, UERD, JUNIWARD and JMiPOD). 
+The model is composed of the 30 SRM filters, followed by a truncation layer and a pretrained EfficientNet-B2. The choice of the truncation layer is detailled in another section. Using a binary classification led to bad accuraccies, so 4 classes were outputted instead (orignal, UERD, JUNIWARD and JMiPOD). The negative log likelihood loss function was used.
 
-Data were augmented using simple horizontal flips with a probability 0.5. At first, it was attempted to train the four variants of each cover images together. However, this led to very high accuracies for the loss, and near randomness for the validation set. My interpretation is this problem is due to the fact that the batch norm layers use the means and variances of the batch during training. Since the four variants of the same image are very similar, and hence, have very similar means/variances, normalising them using their own means/variances led to removing all the useless information, which significantely increased the SNR, by exposing the stego noise. In other words, the network did not learn to find if an image contains stego noise, but rather given several variants of the same image (including the original), tell which ones contain noise.
+## Training Specs
 
+Images were augmented using simple horizontal flips with a probability 0.5. A single gpu was used: NVIDIA RTX 2080 Ti.
 
-, and fixed mean/variances during validation)
+Scheduler and lr
+
+At first, it was attempted to train the model using the four variants of each cover images within the same batch. However, this led to very high accuracies for the trainset, and near randomness for the validation set. My interpretation is this problem originates from the fact that the batch norm layers use the means and variances of the batch during training. Since the four variants of the same image are very similar, and hence, have very similar means/variances, normalising them using their own means/variances led to removing all the useless information, which significantely increased the SNR, by exposing the stego noise (explaining the very high accuracies for the trainset). However, when setting the model to eval mode, the batch norm layers use the running means/variances computed during training, and therefore gives poor results. In other words, the network did not learn to find if an image contains stego noise, but rather given several variants of the same image (including the original), find which ones contain noise.
+
+To adress this issue, the batches were splitted into 4 sub-batches, each sub-batch containing only one version of each image. To improve the training, the model's weights were updated only after infering all 4 sub-batches, so that the gradients were affected by the four versions of each image. A batch of 4 was used, leading to 4 (batch size) * 4 (sub-batch size) = 16 images per update. However, doing so was more memory consuming than simply using a batch of 16 leading to gpu out of memory error. This was remedied with the [large scale model][lsm] module of IBM, swapping automatically usused tensors from the gpu to the cpu memory (at the cost of time). Another downside of such approach is that the batch norm layers were using means/variances computed on a smaller batch (hence less representative).
+
 
 ## Unsuccessful experiment: Denoising Autoencoder (unsucessful: very early convergence)
 
@@ -50,7 +56,6 @@ Several variants:
 -
 
 
-Talk about lms
 
 ## References
 [1] Hyun, S. H., Park, T. H., Jeong, B. G., Kim, Y. S., & Eom, I. K. (2010). Feature Extraction for Steganalysis using Histogram Change of Wavelet Subbands. In Proceeding of The 25th International Technical Conference on Circuits/Systems, Computers and Communications (ITC-CSCC 2010), Pattaya, Thailand, JULY (pp. 4-7).
@@ -70,3 +75,5 @@ Talk about lms
 [autoencoder]: https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/tree/master/unused
 
 [alaska]: https://www.kaggle.com/c/alaska2-image-steganalysis
+
+[lsm]: https://github.com/IBM/pytorch-large-model-support
