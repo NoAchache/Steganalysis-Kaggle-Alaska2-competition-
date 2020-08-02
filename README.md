@@ -40,6 +40,8 @@ At first, it was attempted to train the model using the four variants of each im
 
 To adress this issue, the batches were splitted into 4 sub-batches, each sub-batch containing only one version of each image. To improve the training, the model's weights were updated only after infering all 4 sub-batches, so that the gradients were affected by the four versions of each image. A batch of 4 was used, leading to 4 (batch size) * 4 (sub-batch size) = 16 images per update. However, doing so was more memory consuming than simply using a batch of 16 leading to gpu out of memory error. This was remedied using the [large scale model][lsm] module of IBM, swapping automatically unused tensors from the gpu to the cpu memory (at the cost of time). Another downside of such approach is that the batch norm layers were using means/variances computed on a smaller batch (hence less representative).
 
+## Truncation Layer
+
 
 ## Unsuccessful experiment: Denoising Autoencoder (unsucessful: very early convergence)
 
