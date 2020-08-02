@@ -32,7 +32,7 @@ The model is composed of the 30 SRM filters, followed by a truncation layer and 
 
 ## Training Specs
 
-Images were augmented using simple horizontal flips with a probability 0.5. A single gpu was used: NVIDIA RTX 2080 Ti.
+Images were augmented using simple horizontal flips with probability 0.5. A single gpu was used: NVIDIA RTX 2080 Ti.
 
 Scheduler and lr
 
