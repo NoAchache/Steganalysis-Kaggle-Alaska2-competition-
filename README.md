@@ -25,10 +25,19 @@ Wu et al. propose an alternative to the TLU in [6], the Single-Valued Truncation
 
 The idea behind the STL is that since the truncated values provide useless information, setting them to the same value allows to reduce the total variance. 
 
-## First experiment: Denoising Autoencoder (unsucessful: very early convergence)
 
-Since for all altered images, the original image was provided, the first idea was to use a denoising autoencoder (DAE) to remove the stego noise. The DAE was taking as input an orginal or an altered image, and the output was compared to the original image for the computation of the loss function. Hence, one could expect the DAE to consistentely output an image without stego noise, and therefore, comparing the input with the output would allow to tell whether the input contained stego noise. Then, two different approaches were experimented.
+## Model and Training Specs
 
+The model is composed of the 30 SRM filters, followed by a truncation layer and a pretrained EfficientNet-B2. The choice of the truncation layer is detailled in the next section. Using a binary classification led to bad accuraccies, so 4 classes were outputted instead (orignal, UERD, JUNIWARD and JMiPOD). 
+
+Data were augmented using simple horizontal flips with a probability 0.5. At first, it was attempted to train the four variants of each cover images together. However, this led to very high accuracies for the loss, and near randomness for the validation set. My interpretation is this problem is due to the fact that the batch norm layers use the means and variances of the batch during training. Since the four variants of the same image are very similar, and hence, have very similar means/variances, normalising them using their own means/variances led to removing all the useless information, which significantely increased the SNR, by exposing the stego noise. In other words, the network did not learn to find if an image contains stego noise, but rather given several variants of the same image (including the original), tell which ones contain noise.
+
+
+, and fixed mean/variances during validation)
+
+## Unsuccessful experiment: Denoising Autoencoder (unsucessful: very early convergence)
+
+Since for all altered images, the original image was provided, the first idea was to use a denoising autoencoder (DAE) to remove the stego noise. The DAE was taking as input an orginal or an altered image. The output was compared to the original image for the computation of the loss function. Hence, one could expect the DAE to consistentely output an image without stego noise. Therefore, the input image steganalysis could be performed by comparing it to the output. Two different approaches were experimented:
 
 noise much bigger than stego (10 times larger)
 more complex problem
