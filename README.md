@@ -47,15 +47,21 @@ The model was trained over one epoch with different truncation layers and hyperp
 |Loss|Weighted AUC|Legend|
 |--|--|--|
 | <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/1epoch_loss.svg" width="400" height="200"> | <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/1epoch_weighted_AUC.svg" width="400" height="200"> | <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/legend.png" width="100" height="120"> |
-<p align="center"><i>
+<p align="center">
+  <i>
   Figure 1: Results of different variants of the model after 1 epoch
+  </i>
 </p>
   
-Only one run was performed with the STL since it led to the worst results by far of all runs. However, as expected, using a tlu provided an obvious advantage over the abscence of truncation layer or SRM network. The different thresholds used for the tlu provided very similar results ... bla bla as suggested in [7] thresh no larger than 8
+Only one run was performed with the STL since it led to the worst results by far of all runs. However, as expected, using a tlu provided an obvious advantage over the abscence of truncation layer or SRM network. The different thresholds used for the tlu provided very similar results: if more ressources were available, it would have been interesting to pursue these runs over more epochs to observe a difference. Since it is suggested in [7] that the threshold should not be larger than 8, the tlu11 was rejected. The tlu8 was chosen over the tlu5, to ensure no useful information would be truncated.
+
+## Results
+
+would have been probably better to use batch of 16. Again not enough ressources.
 
 ## Unsuccessful experiment: Denoising Autoencoder (unsucessful: very early convergence)
 
-Since for all altered images, the original image was provided, the first idea was to use a denoising autoencoder (DAE) to remove the stego noise. The DAE was taking as input an orginal or an altered image. The output was compared to the original image for the computation of the loss function. Hence, one could expect the DAE to consistentely output an image without stego noise. Therefore, the input image steganalysis could be performed by comparing it to the output. Two different approaches were experimented:
+Since for all altered images, the original image was provided, the first idea was to use a denoising autoencoder (DAE) to remove the stego noise. The DAE was taking as input an orginal or an altered image. The output was compared to the original image for the computation of the loss function. Hence, one could expect the DAE to consistentely output an image without stego noise. Therefore, the input image steganalysis could be performed by comparing , it to the output. Two different approaches were experimented:
 
 noise much bigger than stego (10 times larger)
 more complex problem
