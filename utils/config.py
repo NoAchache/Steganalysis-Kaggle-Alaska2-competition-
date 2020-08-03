@@ -25,8 +25,6 @@ cfg.log_freq = 500
 cfg.batch_size = 4
 cfg.num_workers = 6
 
-cfg.lr_decay_rate = 10000 # decay lr every # iterations
-cfg.lr = 1e-3
 cfg.lr_scheduler_params = {'factor': 0.5, 'patience': 1, 'threshold_mode': 'abs'}
 
 
