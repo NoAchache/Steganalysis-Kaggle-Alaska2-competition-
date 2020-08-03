@@ -15,11 +15,11 @@ Please note that due to the limited amount of resources available to process suc
 
 Before the era of deep learning, steganalysis methods involved extracting characteristic features from an image to feed them to a classifier. Hyun et al., use histograms of wavelet subbands extracted from images as an input of an MLP binary classifier [1]. In Pevny et al., the stego noise is exposed with high pass filters and a Markov chain is trained to learn the transition probabilities between adjacent pixel values. Subsets of these transitions probabilities are used as features for a SVM classifier [2]. 
 
-Since stego noise is a high frequency (rapidly changing) noise, using high pass filters increases the SNR, by removing low frequency components, as seen in [2]. The Spatial Rich Model (SRM) is a set of 30 high pass filters of the 1st, 2nd and 3rd order [3]. In many recent papers using CNNs for Steganalysis (which as one could expect, proved to work better than other methods), the first layers are initialized with the values of the SRM filters [4,5,6]. Furthermore, using a trunctation layer for the activation of the SRM filters allows to filter out large elements in the image, which contain no information about the stego noise, leading to a faster training and a higher accuraccy [7]. The most commonly used is the Linear Truncation Unit (TLU) which is defined as follows [6]:
+Since stego noise is a high frequency (rapidly changing) noise, using high pass filters increases the Signal to Noise Ratio (SNR), by removing low frequency components, as seen in [2]. The Spatial Rich Model (SRM) is a set of 30 high pass filters of the 1st, 2nd and 3rd order [3]. In many recent papers using CNNs for Steganalysis (which as one could expect, proved to work better than other methods), the first layers are initialized with the values of the SRM filters [4,5,6]. Furthermore, using a trunctation layer for the activation of the SRM filters allows to filter out large elements in the image, which contain no information about the stego noise, leading to a faster training and a higher accuraccy [7]. The most commonly used is the Linear Truncation Unit (TLU) which is defined as follows [6]:
 
 <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/TLU.png" width="200" height="70">
 
-Wu et al. propose an alternative to the TLU in [6], the Single-Valued Truncation (STL) leading to better results:
+Where T is a truncation threshold (hyperparameter). Wu et al. propose an alternative to the TLU in [6], the Single-Valued Truncation (STL) leading to better results:
 
 <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/STL.png" width="200" height="50">
 
@@ -32,9 +32,9 @@ The model is composed of the 30 SRM filters, followed by a truncation layer and 
 
 ## Training Specs
 
-Images were augmented using simple horizontal flips with probability 0.5. A single gpu was used: NVIDIA RTX 2080 Ti.
+Images were augmented using horizontal flips with probability 0.5. A single gpu was used: NVIDIA RTX 2080 Ti. 80% of the data were used for training and 20% for validating. The data were shuffled prior to the train/validation split to ensure an homegenous repartition.
 
-Scheduler and lr
+The learning rates were initially set to 0.001 for the Efficient Net and to a much smaller value, 0.00001, for the SRM network, to impede the SRM filters from straying too far from their original values. The lrs were automatically adjusted with a plateau scheduler, with a decreasing factor of 0.5 a patience of 1, and using the validation loss as the metric.
 
 At first, it was attempted to train the model using the four variants of each image within the same batch. However, this led to very high accuracies for the trainset, and near randomness for the validation set. My interpretation is this problem originates from the fact that the batch norm layers use the means and variances of the batch during training. Since the four variants of the same image are very similar, and hence, have very similar means/variances, normalising them using their own means/variances led to removing all the useless information, which significantely increased the SNR, by exposing the stego noise (explaining the very high accuracies for the trainset). However, when setting the model to eval mode, the batch norm layers use the running means/variances computed during training, and therefore gives poor results. In other words, the network did not learn to find if an image contains stego noise, but rather given several variants of the same image (including the original), find which ones contain noise.
 
@@ -42,6 +42,16 @@ To adress this issue, the batches were splitted into 4 sub-batches, each sub-bat
 
 ## Truncation Layer
 
+The model was trained over one epoch with different truncation layers and hyperparameters. The assumption that two trainings with different parameters would compare the same for one epoch and for many epochs was made, considering the limited amount of time and ressources available for this project. To ensure repeatability between the experiments, the dataset was shuffled with a seed fixed to 42 before the train/validation split, without further shuffling. In Figure 1, stlX and tluX correspond to the truncation layers described in the Literrature Review, with a truncation threshold set to X. The Xs values experimented were ranging from 5 to 11 as commonly used in papers [5,6,7]. Two additional runs are also present: without truncation layer (noTruncation) which is equivalent to setting the truncation threshold to +∞, and without the SRM network (noSRM).
+
+|Loss|Weighted AUC|Legend|
+|--|--|--|
+| <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/1epoch_loss.svg" width="400" height="200"> | <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/1epoch_weighted_AUC.svg" width="400" height="200"> | <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/legend.png" width="100" height="120"> |
+<p align="center"><i>
+  Figure 1: Results of different variants of the model after 1 epoch
+</p>
+  
+Only one run was performed with the STL since it led to the worst results by far of all runs. However, as expected, using a tlu provided an obvious advantage over the abscence of truncation layer or SRM network. The different thresholds used for the tlu provided very similar results ... bla bla as suggested in [7] thresh no larger than 8
 
 ## Unsuccessful experiment: Denoising Autoencoder (unsucessful: very early convergence)
 
@@ -52,6 +62,8 @@ more complex problem
 
 code in unused
 
+
+COMPUTE SRM FLOPS AND COMPARE (add in model)
 Several variants:
 -
 -
