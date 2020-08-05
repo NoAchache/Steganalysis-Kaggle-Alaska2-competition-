@@ -3,7 +3,7 @@ import torch
 # https://github.com/lukemelas/EfficientNet-PyTorch
 from efficientnet_pytorch import EfficientNet
 
-from models.network import SrmNetwork, ClassificationNetwork
+from models.network import SrmNetwork
 
 
 class EndToEndNet(nn.Module):
@@ -13,6 +13,7 @@ class EndToEndNet(nn.Module):
         self.efficient_net = EfficientNet.from_pretrained('efficientnet-b2', in_channels=30)
         self.efficient_net._fc = nn.Linear(in_features=1408, out_features=4, bias=True)
         self.log_softmax = torch.nn.LogSoftmax(dim=-1)
+
     def forward(self, img_input):
         srm_image = self.srm(img_input)
         eff_out = self.efficient_net(srm_image)
