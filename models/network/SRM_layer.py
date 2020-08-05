@@ -1,12 +1,12 @@
 import torch.nn as nn
 import torch
 
-from models.network.truncation_layers import TLU, STL
+from models.network.truncation_layers import TLU
 
 
-class SrmNetwork(nn.Module):
+class SrmLayer(nn.Module):
     def __init__(self):
-        super(SrmNetwork, self).__init__()
+        super(SrmLayer, self).__init__()
 
         self.conv3x3 = nn.Conv2d(3, 17, 3, 1, padding=1)
         self.conv5x5 = nn.Conv2d(3, 13, 5, 1, padding=2)
