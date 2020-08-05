@@ -5,7 +5,7 @@ Pytorch implementation of a steganalysis network as part of the Alaska2 Kaggle c
 ## Introduction
 Steganography is the science of hidding messages into images by changing its encoding coefficients in the DCT domain. Such changes slightly alter the pixel values in the spatial domain but are not noticeable by the human eye. Steganalysis is the study of detecting wether an image has been altered through steganography, i.e wheter it contains "stego noise".
 
-The [Alaska2 competiton][alaska] consists in classifying images within two classes: original or altered with steganography. A labelled dataset of 75k series of images is provided. Each serie of images contains an orignal image and three alterations of the original image through three different steganographic methods: UERD, JUNIWARD and JMiPOD. Hence, the dataset contains a total of 75 * 4 = 300k images. The Testset is composed of 10k images.
+The [Alaska2 competiton][alaska] consists in classifying images within two classes: original or altered with steganography. A labelled dataset of 75k series of images is provided. Each serie of images contains an orignal image and three alterations of the original image through three different steganographic methods: UERD, JUNIWARD and JMiPOD. Hence, the dataset contains a total of 75 * 4 = 300k images. The Testset is composed of 10k images. The competition's metric was a weighted AUC (more details [here][weighted_AUC])
 
 Please note that due to the limited amount of resources available to process such a large dataset, the amount of experiments/runs were very limited.
 
@@ -19,7 +19,7 @@ Since stego noise is a high frequency (rapidly changing) noise, using high pass 
 
 <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/TLU.png" width="200" height="70">
 
-Where T is a truncation threshold (hyperparameter). Wu et al. propose an alternative to the TLU in [6], the Single-Valued Truncation (STL) leading to better results:
+Where T is the truncation threshold (hyperparameter). Wu et al. propose an alternative to the TLU in [6], the Single-Valued Truncation (STL) leading to better results:
 
 <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/STL.png" width="200" height="50">
 
@@ -28,7 +28,9 @@ The idea behind the STL is that since the truncated values provide useless infor
 
 ## Model
 
-The model is composed of the 30 SRM filters, followed by a truncation layer and a pretrained EfficientNet-B2. The choice of the truncation layer is detailled in another section. Using a binary classification led to bad accuraccies, so 4 classes were outputted instead (orignal, UERD, JUNIWARD and JMiPOD). The negative log likelihood loss function was used.
+The model is composed of the 30 SRM filters, followed by a truncation layer and a pretrained EfficientNet-B2. Although the SRM network consists in 'only' 30 filters, they increased the amount of FLOPS of the overall model by half, compared to merely using an efficient net, as detailed in this [file][flops].
+
+The choice of the truncation layer is detailled in another section. Using a binary classification led to bad accuraccies, so 4 classes were outputted instead (orignal, UERD, JUNIWARD and JMiPOD). The negative log likelihood loss function was used.
 
 ## Training Specs
 
@@ -42,7 +44,7 @@ To adress this issue, the batches were splitted into 4 sub-batches, each sub-bat
 
 ## Truncation Layer
 
-The model was trained over one epoch with different truncation layers and hyperparameters. The assumption that two trainings with different parameters would compare the same for one epoch and for many epochs was made, considering the limited amount of time and ressources available for this project. To ensure repeatability between the experiments, the dataset was shuffled with a seed fixed to 42 before the train/validation split, without further shuffling. In Figure 1, stlX and tluX correspond to the truncation layers described in the Literrature Review, with a truncation threshold set to X. The Xs values experimented were ranging from 5 to 11 as commonly used in papers [5,6,7]. Two additional runs are also present: without truncation layer (noTruncation) which is equivalent to setting the truncation threshold to +∞, and without the SRM network (noSRM).
+The model was trained over one epoch with different truncation layers and hyperparameters. The assumption that two trainings with different parameters would compare the same for one epoch and for many epochs was made, considering the limited amount of time and ressources available for this project. To ensure repeatability between the experiments, the dataset was shuffled with a seed fixed to 42 before the train/validation split, without further shuffling. In Figure 1 shows the evolution of the training losses and weighted AUCs over one epoch. *stlX* and *tluX* correspond to the truncation layers described in the Literrature Review, with a truncation threshold set to X. The Xs values experimented were ranging from 5 to 11 as commonly used in papers [5,6,7]. Two additional runs are also present: without truncation layer (*noTruncation*) which is equivalent to setting the truncation threshold to +∞, and without the SRM network (*noSRM*).
 
 |Loss|Weighted AUC|Legend|
 |--|--|--|
@@ -57,25 +59,31 @@ Only one run was performed with the STL since it led to the worst results by far
 
 ## Results
 
-would have been probably better to use batch of 16. Again not enough ressources.
+The results of the training are shown in Figure 2. The score (Weighted AUC) on the Test dataset was 0.879.
 
-## Unsuccessful experiment: Denoising Autoencoder (unsucessful: very early convergence)
+|Training Loss|Training Weighted AUC|Learning Rate|
+|--|--|--|
+| <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/train_loss.svg" width="400" height="200"> | <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/train_weighted_AUC.svg" width="400" height="200"> | <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/val_lr.svg" width="400" height="200"> |
 
-Since for all altered images, the original image was provided, the first idea was to use a denoising autoencoder (DAE) to remove the stego noise. The DAE was taking as input an orginal or an altered image. The output was compared to the original image for the computation of the loss function. Hence, one could expect the DAE to consistentely output an image without stego noise. Therefore, the input image steganalysis could be performed by comparing , it to the output. Two different approaches were experimented:
+|Validation Loss|Validation Weighted AUC|
+|--|--|
+| <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/val_loss.svg" width="400" height="200"> | <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/val_weighted_AUC.svg" width="400" height="200"> |
 
-noise much bigger than stego (10 times larger)
-more complex problem
+<p align="center">
+  <i>
+  Figure 2: Training and validation results
+  </i>
+</p>
 
-code in unused
+If more ressources would have been available, it would have been interesting to train the model more than one time and alter the truncation layer, truncation threshold, learning rate scheduling (seems to be decreasing a bit too fast in our training) , batches (batch of 16 instead of 4 sub-batches), etc...
 
+## Unsuccessful experiment: Denoising Autoencoder
 
-COMPUTE SRM FLOPS AND COMPARE (add in model)
-Several variants:
--
--
--
+*Decription of the very first experiment, which unfortunately led to poor results. The remaining pieces of code about this can be found in [unused][unused]*
 
+Since for all altered images, the original image was provided, the first idea was to use a denoising autoencoder (DAE) to remove the stego noise. The DAE was taking as input an orginal or an altered image. The output was compared to the original image for the computation of the loss function. Hence, one could expect the DAE to consistentely output an image without stego noise. Therefore, the input image steganalysis could be performed by comparing it to the output. Two different approaches were experimented. In the first one, the output image was substracted to the input of the DAE to expose the stego noise, and the resulting image was passed through an efficient network. In the second approach, the input and the ouput were compared with a Siamese network. It was also tried to first use a SRM network, and pass all 30 channels to the DAE.
 
+When vizualising the data, it was noticed that the noise left out by the DAE was about 10 times larger than the stego noise, which explains the poor classification results. Furthermore, removing the stego noise from an image is actually a much more complex problem than merely telling whether it is there or not.
 
 ## References
 [1] Hyun, S. H., Park, T. H., Jeong, B. G., Kim, Y. S., & Eom, I. K. (2010). Feature Extraction for Steganalysis using Histogram Change of Wavelet Subbands. In Proceeding of The 25th International Technical Conference on Circuits/Systems, Computers and Communications (ITC-CSCC 2010), Pattaya, Thailand, JULY (pp. 4-7).
@@ -96,4 +104,10 @@ Several variants:
 
 [alaska]: https://www.kaggle.com/c/alaska2-image-steganalysis
 
+[weighted_AUC]: https://www.kaggle.com/c/alaska2-image-steganalysis/overview/evaluation
+
+[flops]: https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/utils/SRM_flops_calculator.py
+
 [lsm]: https://github.com/IBM/pytorch-large-model-support
+
+[unused]: https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/tree/master/unused
