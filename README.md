@@ -19,7 +19,7 @@ Since stego noise is a high frequency (rapidly changing) noise, the use of high 
 
 <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/TLU.png" width="200" height="70">
 
-Where T is the truncation threshold (hyperparameter). Wu et al. propose an alternative to the TLU in [6], the Single-Valued Truncation (STL) leading to better results:
+Where T is the truncation threshold (hyperparameter). Wu et al. propose an alternative to the TLU in [6], the Single-Valued Truncation (STL) leading to better results with their network:
 
 <img src="https://github.com/NoAchache/Steganalysis-Kaggle-Alaska2-competition-/blob/master/ReadMe_imgs/STL.png" width="200" height="50">
 
