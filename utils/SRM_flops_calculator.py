@@ -16,10 +16,18 @@ def SRM_additional_flops(img_size):
 
     return tot_flops
 
-if __name__ == '__main__':
-    img_size = 224  # Same img shape as in the efficient net paper to compare with the number of FLOPS they computed
+def display_ratio(img_size):
     extra_flops = SRM_additional_flops(img_size)
     eff_net_b2_FLOPS = 1e9  # c.f. efficient_net paper
     ratio = extra_flops/eff_net_b2_FLOPS
+    print(ratio)
 
-    print(extra_flops)
+if __name__ == '__main__':
+    img_size = 224  # Same img shape as in the efficient net paper to compare with the number of FLOPS they computed
+    display_ratio(img_size)
+
+
+#########################################################################
+
+# Efficient net paper: Tan, M., & Le, Q. V. (2019). Efficientnet: Rethinking model scaling for convolutional neural
+# networks. arXiv preprint arXiv:1905.11946.
