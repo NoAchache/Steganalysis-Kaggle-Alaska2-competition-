@@ -11,8 +11,6 @@ Please note that due to the limited amount of resources available to process suc
 
 ## Litterature Review
 
-*Although a Litterature Review may not be appropriated in a ReadMe, this short section helps to better understand the choices taken to design the model.*
-
 Before the era of deep learning, steganalysis methods involved extracting characteristic features from an image to feed them to a classifier. Hyun et al. use histograms of wavelet subbands extracted from images as an input of an MLP binary classifier [1]. In Pevny et al., the stego noise is exposed with high pass filters and a Markov chain is trained to learn the transition probabilities between adjacent pixel values. Subsets of these transitions probabilities are used as features for an SVM classifier [2]. 
 
 Since stego noise is a high frequency (rapidly changing) noise, the use of high pass filters increases the Signal to Noise Ratio (SNR), by removing low-frequency components, as seen in [2]. The Spatial Rich Model (SRM) is a set of 30 high pass filters of the 1st, 2nd and 3rd order [3]. In many recent papers using CNNs for Steganalysis (which as one could expect, proved to work better than other methods), the SRM filters are used as the first layer [4,5,6]. Furthermore, using a truncation layer for the activation of the SRM filters allows to filter out large elements in the image, which contain no information about the stego noise, leading to a faster training and a higher accuracy overall [7]. The most commonly used truncation layer is the Linear Truncation Unit (TLU) which is defined as follows [6]:
