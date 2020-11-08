@@ -1,13 +1,11 @@
-# from easydict import EasyDict
+from easydict import EasyDict
 import torch
 import os.path as osp
 
+
 PROJECT_ROOT = ''
 
-class Object(object):
-    pass
-
-cfg = Object()
+cfg = EasyDict()
 
 cfg.train_name = 'test'
 
